@@ -1,6 +1,6 @@
 from app import app
 from flask import jsonify, request
-from app import models, views
+from app import models
 from flask_jwt_extended import JWTManager, create_access_token
 from flask_mail import Mail, Message
 

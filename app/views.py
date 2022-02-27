@@ -8,7 +8,7 @@ def home():
     # return render_template('home.html')
 
 
-@app.route('/not_found')
+@app.route('/not-found')
 def not_found():
     return "<h2>Page Not Found<h2>"
     # return render_template('other.html')

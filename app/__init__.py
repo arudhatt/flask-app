@@ -23,13 +23,17 @@ mail.init_app(app)
 
 from app.users.routes import users
 from app.posts.routes import posts
+from app.contacts.routes import contacts
+from app.settings.routes import settings
 from app.main.routes import main
 from app.errors.handlers import errors
 
 app.register_blueprint(users)
 app.register_blueprint(posts)
+app.register_blueprint(contacts)
 app.register_blueprint(main)
 app.register_blueprint(errors)
+app.register_blueprint(settings)
 
 
 #def create_app(config_class=Config):

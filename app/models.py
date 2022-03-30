@@ -77,3 +77,12 @@ class Visitor(db.Model, UserMixin):
 
     def __repr__(self):
         return f"User('{self.name}', '{self.email}', '{self.phone}')"
+
+
+class Settings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    premises_full = db.Column(db.Boolean, nullable=False, default=True)
+    waitlist = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __repr__(self):
+        return f"Post('{self.premises_full}', '{self.waitlist}')"

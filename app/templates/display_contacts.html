@@ -1,21 +1,21 @@
 {% extends "layout.html" %}
 {% block content %}
-    {% for post in posts.items %}
+    {% for contact in contacts.items %}
         <article class="media content-section">
           <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/default.jpg') }}">
           <div class="media-body">
             <div class="article-metadata">
 
-              <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+              <label class="text-muted">{{ contact.phone }}</label>
             </div>
-            <h4><a class="article-title" href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a></h4>
-            <p class="article-content">{{ post.content }}</p>
+            <h4><a class="article-title" href="{{ url_for('contacts.contact_details', contact_id=contact.id) }}">{{ contact.name }}</a></h4>
+            <p class="article-content">{{ contact.email }}</p>
           </div>
         </article>
     {% endfor %}
-    {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+    {% for page_num in contacts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
       {% if page_num %}
-        {% if posts.page == page_num %}
+        {% if contacts.page == page_num %}
           <a class="btn btn-info mb-4" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
         {% else %}
           <a class="btn btn-outline-info mb-4" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>

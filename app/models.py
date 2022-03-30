@@ -1,15 +1,12 @@
 from app import app
-from flask_marshmallow import Marshmallow
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, String, Float
-import os
-
+from datetime import datetime
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from flask import current_app
+from app import db, login_manager
+from flask_login import UserMixin
 
 with app.app_context():
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'screening.db')
-    db = SQLAlchemy(app)
-    ma = Marshmallow(app)
+    db.create_all()
 
 
 @app.cli.command('db_create')
@@ -26,47 +23,57 @@ def db_drop():
 
 @app.cli.command('db_seed')
 def db_seed():
-    test_user = User(first_name='test', last_name='test',
-                     email='test@test.com', phone_number=9870157121, password='test')
+    test_user = User(username='test',
+                     email='test@test.com', password='test')
     db.session.add(test_user)
     db.session.commit()
     print('Database Seeded!')
 
 
-# Database Models
-class User(db.Model):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    first_name = Column(String)
-    last_name = Column(String)
-    email = Column(String, unique=True)
-    phone_number = Column(Integer)
-    password = Column(String)
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
-class UserSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'first_name', 'last_name', 'email', 'phone_number', 'password')
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    password = db.Column(db.String(60), nullable=False)
+
+    def get_reset_token(self, expires_sec=1800):
+        s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
+        return s.dumps({'user_id': self.id}).decode('utf-8')
+
+    @staticmethod
+    def verify_reset_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token)['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
+
+    def __repr__(self):
+        return f"User('{self.username}', '{self.email}', '{self.image_file}')"
 
 
-user_schema = UserSchema()
-users_schema = UserSchema(many=True)
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    content = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f"Post('{self.title}', '{self.date_posted}')"
 
 
-class Visitor(db.Model):
-    __tablename__ = 'visitors'
-    id = Column(Integer, primary_key=True)
-    first_name = Column(String)
-    last_name = Column(String)
-    email = Column(String, unique=True)
-    phone_number = Column(Integer)
-    password = Column(String)
+class Visitor(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.Integer, nullable=False)
 
-
-class VisitorSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'first_name', 'last_name', 'email', 'phone_number', 'password')
-
-
-visitor_schema = VisitorSchema()
-visitors_schema = VisitorSchema(many=True)
+    def __repr__(self):
+        return f"User('{self.name}', '{self.email}', '{self.phone}')"
